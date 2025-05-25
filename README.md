@@ -1,225 +1,70 @@
-# multiuser-banking-system
+# Bank System Console Application
 
-import java.io.*;
-import java.util.*;
+## Overview
 
-abstract class Account {
-    protected String userId;
-    protected String name;
-    protected double balance;
+This Java console-based application simulates a simple multi-user banking system, allowing users to create and manage Savings and Current accounts through a menu-driven interface. Account data is persisted to a file, ensuring that account information is retained between sessions.
 
-    public Account(String userId, String name, double balance) {
-        this.userId = userId;
-        this.name = name;
-        this.balance = balance;
-    }
+## Features
 
-    public abstract double getInterestRate();
-    public abstract double getWithdrawalLimit();
-    public abstract String getType();
+* **Account Types**: Supports both Savings and Current accounts.
+* **Create Account**: Generates a unique 6-character account number using UUID.
+* **Deposit Funds**: Allows depositing any positive amount into an account.
+* **Withdraw Funds**: Enables withdrawals with balance checks; Savings accounts may include interest logic, Current accounts support overdraft up to a limit.
+* **Check Balance**: Displays the current balance of a specified account.
+* **Display All Accounts**: Lists all existing accounts with details.
+* **Data Persistence**: Saves account data to `accounts.dat` via Java serialization and loads it on startup.
 
-    public void deposit(double amount) {
-        balance += amount;
-    }
+## Prerequisites
 
-    public boolean withdraw(double amount) {
-        if (amount <= getWithdrawalLimit() && amount <= balance) {
-            balance -= amount;
-            return true;
-        }
-        return false;
-    }
+* Java Development Kit (JDK) 8 or higher
+* Command-line terminal or any Java-compatible IDE (e.g., IntelliJ IDEA, Eclipse)
 
-    public String getUserId() { return userId; }
-    public String getName() { return name; }
-    public double getBalance() { return balance; }
-}
+## Setup and Compilation
 
-class SavingsAccount extends Account {
-    public SavingsAccount(String userId, String name, double balance) {
-        super(userId, name, balance);
-    }
+1. **Navigate** to the project directory containing `BankSystemConsole.java`.
+2. **Compile** the source file:
 
-    public double getInterestRate() { return 4.0; }
-    public double getWithdrawalLimit() { return 10000; }
-    public String getType() { return "SAVINGS"; }
-}
+```bash
+javac BankSystemConsole.java
+```
 
-class CurrentAccount extends Account {
-    public CurrentAccount(String userId, String name, double balance) {
-        super(userId, name, balance);
-    }
+## Running the Application
 
-    public double getInterestRate() { return 0.5; }
-    public double getWithdrawalLimit() { return 50000; }
-    public String getType() { return "CURRENT"; }
-}
+After successful compilation, run the program:
 
-class FileUtils {
-    private static final String FILE_NAME = "accounts.txt";
+```bash
+java BankSystemConsole
+```
 
-    public static List<Account> loadAccounts() {
-        List<Account> accounts = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(FILE_NAME))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] parts = line.split("\\|");
-                String id = parts[0], name = parts[1], type = parts[2];
-                double balance = Double.parseDouble(parts[3]);
+You will see a menu with options to create accounts, deposit, withdraw, check balances, display all accounts, or exit.
 
-                Account acc = type.equals("SAVINGS") ?
-                    new SavingsAccount(id, name, balance) :
-                    new CurrentAccount(id, name, balance);
+## Usage Guide
 
-                accounts.add(acc);
-            }
-        } catch (IOException e) {
-            System.out.println("No data found. Starting fresh.");
-        }
-        return accounts;
-    }
+1. **Create Account**: Select option 1, enter the account holder's name and type (`Savings` or `Current`).
+2. **Deposit Funds**: Select option 2, provide the account number and deposit amount.
+3. **Withdraw Funds**: Select option 3, provide the account number and withdrawal amount.
+4. **Check Balance**: Select option 4, enter the account number to view the balance.
+5. **Display All Accounts**: Select option 5 to list every account stored in the system.
+6. **Exit**: Select option 6 to save accounts to `accounts.dat` and exit the application.
 
-    public static void saveAccounts(List<Account> accounts) {
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_NAME))) {
-            for (Account acc : accounts) {
-                bw.write(acc.getUserId() + "|" + acc.getName() + "|" + acc.getType() + "|" + acc.getBalance() + "\n");
-            }
-        } catch (IOException e) {
-            System.out.println("Error saving data.");
-        }
-    }
-}
+## File Structure
 
-class AccountDAO {
-    private List<Account> accounts;
+```
+├── BankSystemConsole.java   # Main application source code
+└── accounts.dat             # Serialized account data file (generated at runtime)
+```
 
-    public AccountDAO() {
-        accounts = FileUtils.loadAccounts();
-    }
+## Data Persistence
 
-    public void createAccount(Account acc) {
-        accounts.add(acc);
-        FileUtils.saveAccounts(accounts);
-    }
+* The application automatically **loads** existing account data from `accounts.dat` on startup.
+* On exit, it **saves** all accounts back to `accounts.dat` ensuring data continuity.
 
-    public Account getAccount(String userId) {
-        for (Account acc : accounts)
-            if (acc.getUserId().equals(userId))
-                return acc;
-        return null;
-    }
+## Extensibility
 
-    public void updateAccount(Account updatedAcc) {
-        for (int i = 0; i < accounts.size(); i++) {
-            if (accounts.get(i).getUserId().equals(updatedAcc.getUserId())) {
-                accounts.set(i, updatedAcc);
-                break;
-            }
-        }
-        FileUtils.saveAccounts(accounts);
-    }
+* **Interest Calculation**: Extend the `SavingsAccount` class to compute interest periodically.
+* **Overdraft Settings**: Customize overdraft limits for `CurrentAccount`.
+* **User Authentication**: Integrate login credentials for enhanced security.
 
-    public boolean deleteAccount(String userId) {
-        boolean removed = accounts.removeIf(acc -> acc.getUserId().equals(userId));
-        if (removed) FileUtils.saveAccounts(accounts);
-        return removed;
-    }
+## License
 
-    public List<Account> getAllAccounts() {
-        return accounts;
-    }
-}
-
-public class BankingSystem {
-    public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        AccountDAO dao = new AccountDAO();
-
-        while (true) {
-            System.out.println("\n===== Multi-User Banking System =====");
-            System.out.println("1. Create Account");
-            System.out.println("2. Deposit");
-            System.out.println("3. Withdraw");
-            System.out.println("4. View Account");
-            System.out.println("5. Delete Account");
-            System.out.println("6. Exit");
-            System.out.print("Choose an option: ");
-            int choice = sc.nextInt();
-
-            switch (choice) {
-                case 1 -> {
-                    sc.nextLine();
-                    System.out.print("User ID: ");
-                    String id = sc.nextLine();
-                    System.out.print("Name: ");
-                    String name = sc.nextLine();
-                    System.out.print("Account Type (SAVINGS/CURRENT): ");
-                    String type = sc.nextLine().toUpperCase();
-                    System.out.print("Initial Deposit: ");
-                    double deposit = sc.nextDouble();
-
-                    Account acc = type.equals("SAVINGS") ?
-                            new SavingsAccount(id, name, deposit) :
-                            new CurrentAccount(id, name, deposit);
-                    dao.createAccount(acc);
-                    System.out.println("✅ Account created successfully.");
-                }
-                case 2 -> {
-                    sc.nextLine();
-                    System.out.print("User ID: ");
-                    String id = sc.nextLine();
-                    Account acc = dao.getAccount(id);
-                    if (acc != null) {
-                        System.out.print("Amount to deposit: ");
-                        double amt = sc.nextDouble();
-                        acc.deposit(amt);
-                        dao.updateAccount(acc);
-                        System.out.println("✅ Deposited successfully.");
-                    } else System.out.println("❌ Account not found.");
-                }
-                case 3 -> {
-                    sc.nextLine();
-                    System.out.print("User ID: ");
-                    String id = sc.nextLine();
-                    Account acc = dao.getAccount(id);
-                    if (acc != null) {
-                        System.out.print("Amount to withdraw: ");
-                        double amt = sc.nextDouble();
-                        if (acc.withdraw(amt)) {
-                            dao.updateAccount(acc);
-                            System.out.println("✅ Withdrawal successful.");
-                        } else System.out.println("❌ Withdrawal failed. Check balance or limit.");
-                    } else System.out.println("❌ Account not found.");
-                }
-                case 4 -> {
-                    sc.nextLine();
-                    System.out.print("User ID: ");
-                    String id = sc.nextLine();
-                    Account acc = dao.getAccount(id);
-                    if (acc != null) {
-                        System.out.println("\n--- Account Details ---");
-                        System.out.println("User ID       : " + acc.getUserId());
-                        System.out.println("Name          : " + acc.getName());
-                        System.out.println("Account Type  : " + acc.getType());
-                        System.out.println("Balance       : ₹" + acc.getBalance());
-                        System.out.println("Interest Rate : " + acc.getInterestRate() + "%");
-                        System.out.println("Withdraw Limit: ₹" + acc.getWithdrawalLimit());
-                    } else System.out.println("❌ Account not found.");
-                }
-                case 5 -> {
-                    sc.nextLine();
-                    System.out.print("User ID: ");
-                    String id = sc.nextLine();
-                    if (dao.deleteAccount(id))
-                        System.out.println("✅ Account deleted.");
-                    else System.out.println("❌ Account not found.");
-                }
-                case 6 -> {
-                    System.out.println("👋 Thank you for using the banking system!");
-                    return;
-                }
-                default -> System.out.println("❌ Invalid choice. Try again.");
-            }
-        }
-    }
-}
+This project is licensed under the MIT License. Feel free to use, modify, and distribute.
