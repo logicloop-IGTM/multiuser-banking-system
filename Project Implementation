@@ -1,0 +1,101 @@
+## 1. Prerequisites
+
+* **JDK Installation**: Ensure Java Development Kit (JDK) 8 or higher is installed and `JAVA_HOME` is configured.
+* **IDE Setup**: Choose an IDE (IntelliJ IDEA, Eclipse, VS Code) with Java support. Install relevant plugins for Maven/Gradle and Git integration.
+* **Git & GitHub**: Have Git installed locally and a GitHub account ready. Configure SSH keys or HTTPS credentials for repository access.
+
+---
+
+## 2. Define Project & Repository Structure
+
+On GitHub, create a new repository (e.g., `BankConsoleApp`) and initialize with:
+
+* **README.md**: Project overview, setup, usage, and contribution guidelines.
+* **LICENSE**: MIT License file.
+* **.gitignore**: Exclude build artifacts, IDE configs, and serialized data (`accounts.dat`).
+* **docs/**: Folder for architecture diagrams, design notes.
+* **.github/**: Workflow definitions for CI (build, test).
+* **src/**: Standard layout:
+
+  * `src/main/java/com/bankapp/...` for production code
+  * `src/test/java/com/bankapp/...` for unit tests
+
+---
+
+## 3. Maintain Proper File & Package Structure
+
+Organize classes by responsibility:
+
+1. **model**: Data classes (Account, AccountType)
+2. **dao**: Interfaces and implementations for file-based persistence
+3. **service**: Business logic and validation coordination
+4. **util**: Reusable helpers (input validation)
+5. **ui**: Console interaction and menu handling
+
+Keeping packages cohesive improves readability and maintainability.
+
+---
+
+## 4. Auto-Generation of Files for CRUD
+
+* **Factory or Builder**: Define a mechanism to auto-create new data files (e.g., `accounts.dat` on first run).
+* On application startup, check for existence; if missing, initialize an empty file or data store.
+
+---
+
+## 5. Implement I/O Connectivity
+
+* **Serialization**: Use Java’s `ObjectOutputStream`/`ObjectInputStream` for reading and writing account lists.
+* Abstract file paths via configuration or constructor parameters in DAO.
+* Handle file-not-found gracefully by creating new file.
+
+---
+
+## 6. Layered Architecture for CRUD Operations
+
+* **DAO Layer**: Low-level file read/write and data serialization.
+* **Service Layer**: Invokes DAO, applies business rules (overdraft, interest stub), and orchestrates transactions.
+* **UI Layer**: Interacts with user, parses input, and invokes service. Reports results or error messages.
+
+This separation allows unit testing each layer independently.
+
+---
+
+## 7. Input Validation
+
+* **Name Validation**: Non-null, non-empty, and length constraints.
+* **Amount Validation**: Positive decimals only.
+* **Account Type**: Accept only predefined enums (`SAVINGS`, `CURRENT`).
+
+Validation logic should reside in a dedicated utility class and be reused across layers.
+
+---
+
+## 8. Accuracy of Output
+
+* Display monetary values formatted to two decimal places.
+* Clearly label each console prompt and result (e.g., “Current Balance: ₹1,234.56”).
+* Align columns when listing multiple accounts for readability.
+
+---
+
+## 9. Error Messages and User Feedback
+
+* Provide context-rich, actionable messages:
+
+  * Invalid input: “Error: Amount must be greater than zero.”
+  * File errors: “Warning: Data file not found. A new file will be created.”
+  * Business rule violations: “Insufficient funds. Maximum overdraft is ₹1,000.”
+* Log exceptions to console or to a log file for debugging (optional enhancement).
+
+---
+
+## 10. Continuous Integration (CI)
+
+* Configure a GitHub Actions workflow (`.github/workflows/java-ci.yml`) to:
+
+  * Compile code
+  * Run unit tests
+  * Report build status
+
+This ensures code quality on every pull request.
