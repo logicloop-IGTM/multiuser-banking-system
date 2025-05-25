@@ -1,0 +1,29 @@
+```
+BankConsoleApp/                    # Root of the repository
+├── .github/                       # GitHub-specific configs
+│   └── workflows/                 # CI/CD pipelines
+│       └── java-ci.yml           # GitHub Actions for build & test
+├── docs/                          # Project documentation
+│   └── architecture.md            # High‑level architecture doc
+├── src/                           # Source code
+│   └── main/                      # Main application code
+│       └── java/                  # Java packages
+│           └── com/bankapp/       # Base package
+│               ├── model/         # Data models (Account, AccountType)
+│               ├── dao/           # Data access objects (interfaces & file DAO)
+│               ├── service/       # Business logic layer
+│               ├── util/          # Utility classes (validation)
+│               └── ui/            # Console UI launcher & menu
+│   └── test/                      # Unit and integration tests
+│       └── java/                  # Mirror of main/java for test packages
+│           └── com/bankapp/       # Tests for each layer
+│               ├── model/         # Model tests
+│               ├── dao/           # DAO tests
+│               └── service/       # Service tests
+├── accounts.dat                   # Serialized data (gitignored usually)
+├── .gitignore                     # Files and folders to ignore
+├── LICENSE                        # MIT License text
+├── README.md                      # Project overview and quickstart
+├── build.gradle or pom.xml        # Build configuration (Gradle or Maven)
+└── CONTRIBUTING.md                # Guidelines for contributors
+```
